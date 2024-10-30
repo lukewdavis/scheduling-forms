@@ -1,0 +1,331 @@
+<!-- Here is the embed link -->
+<!-- <iframe src="url_to_source" style="width: 100%; height: 100vh; border: none;" onload="this.contentWindow.document.getElementById('content').innerHTML = this.contentWindow.document.body.innerHTML;"></iframe> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Anthem Form</title>
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 25vw;
+            font-size: 1.5em;
+        }
+        #form-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #ffffff;
+        }
+        #form-area {
+            flex: 1;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .calendar-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        input, select, textarea {
+            width: calc(100% - 20px);
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultMessage {
+            margin-top: 20px;
+            color: green;
+        }
+        .allowed-date {
+            background-color: #ffffff !important;
+        }
+        .other-date {
+            background-color: #f0f0f0 !important;
+        }
+        .selected-event {
+            background-color: #007BFF !important;
+            color: #ffffff;
+        }
+        .spinner {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+    </style>
+</head>
+<body>
+<div id="content">
+
+<div id="loading">
+    <div class="spinner"></div>
+    <p>Loading, please wait...</p>
+</div>
+
+<p id="resultMessage" style="display: none;"></p>
+
+<div id="form-container" style="display: none;">
+    <div id="form-area">
+        <form id="volunteerForm">
+            <label for="name">Your Name/Point of Contact:</label>
+            <input type="text" id="name" name="name" required><br/>
+
+            <label for="group_name">Group/Organization Name (if applicable):</label>
+            <input type="text" id="group_name" name="group_name"><br/>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required><br/>
+            
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" name="phone" required><br/>
+            
+            <label for="info">Will you/your group be serving or do you need our staff so to serve the food for you?</label>
+            <select id="info" name="info" required>
+                <option value="">Select an option</option>
+                <option value="This group will serve their own food">We will serve the food.</option>
+                <option value="Turks staff will serve food">We will need the Turks staff to serve the food.</option>
+                <option value="This group will need help serving food">We will have some people to help serve food but may need help.</option>
+            </select><br/>
+
+            <label for="food">What will you be serving?</label>
+            <textarea id="food" name="food" placeholder="Provide a description of what you will be serving..."></textarea><br/>
+            
+            <label for="additionalInfo">Additional Information:</label>
+            <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide any additional information here..."></textarea><br/>
+
+            <label for="date">Selected Dates:</label>
+            <input type="text" id="date" name="date" required readonly><br/>
+            
+            <button type="submit">Submit</button>
+        </form>
+        
+    </div>
+    
+    <div class="calendar-container">
+        <div id="calendar"></div>
+    </div>
+</div>
+</div>
+
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+<script>
+    const glitchUrl = 'https://shared-skitter-bronze.glitch.me/';
+    let allowedDates = [];
+    let selectedDates = new Set(); // Track selected dates
+
+    const fetchAllowedDates = async () => {
+        try {
+            const allowedDatesResponse = await fetch(`${glitchUrl}/allowed-dates`);
+            const allowedDatesData = await allowedDatesResponse.json();
+            const allowedDates = allowedDatesData.allowedDates;
+
+            if (!Array.isArray(allowedDates)) {
+                throw new TypeError("Allowed dates is not an array");
+            }
+
+            // Fetch existing volunteer events
+            const eventsResponse = await fetch(`${glitchUrl}/api/events`);
+            const events = await eventsResponse.json();
+
+            // Extract dates for volunteers of type "meal_provider"
+            const mealDates = events
+                .filter(event => event.type === "meal_provider")
+                .map(event => event.date);
+
+            // Filter out performer dates from allowed dates
+            return allowedDates.filter(date => !mealDates.includes(date));
+        } catch (error) {
+            console.error("Error fetching allowed dates:", error);
+            throw error; // Re-throw error to be caught in the retry logic
+        }
+    };
+
+    const renderCalendar = async () => {
+        allowedDates = await fetchAllowedDates();
+
+        $('#calendar').fullCalendar({
+            header: {
+                left: 'title',
+                right: 'prev,next'
+            },
+            selectable: true,
+            select: function(startDate) {
+                const dateStr = moment(startDate).format('YYYY-MM-DD');
+
+                if (allowedDates.includes(dateStr)) {
+                    if (selectedDates.has(dateStr)) {
+                        // Deselect the date
+                        selectedDates.delete(dateStr);
+                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                    } else {
+                        // Select the date
+                        selectedDates.add(dateStr);
+                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                    }
+                    
+                    // Update the calendar display
+                    updateEventDisplay();
+                }
+            },
+            dayRender: function(date, cell) {
+                const dateStr = date.format('YYYY-MM-DD');
+
+                if (allowedDates.includes(dateStr)) {
+                    cell.addClass('allowed-date');
+                } else {
+                    cell.addClass('other-date');
+                }
+            },
+            events: [], // No events from remote API
+            height: 'auto',
+            eventClick: function(event, jsEvent, view) {
+                const dateStr = moment(event.start).format('YYYY-MM-DD');
+
+                if (selectedDates.has(dateStr)) {
+                    // Deselect the event date
+                    selectedDates.delete(dateStr);
+                    // Remove the event from the calendar
+                    $('#calendar').fullCalendar('removeEvents', event._id);
+                    $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                }
+            },
+        });
+    };
+
+    const updateEventDisplay = () => {
+        // Clear existing events from the calendar
+        $('#calendar').fullCalendar('removeEvents');
+
+        // Add selected dates as events
+        selectedDates.forEach(date => {
+            $('#calendar').fullCalendar('renderEvent', {
+                title: 'Selected',
+                start: date,
+                allDay: true,
+                className: 'selected-event'
+            }, true);
+        });
+    };
+
+    const loadFormData = async () => {
+        while (true) {
+            try {
+                await renderCalendar();
+                break; // Break the loop if successful
+            } catch (error) {
+                console.warn("Retrying to fetch data from Glitch...", error);
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
+            }
+        }
+        $('#loading').hide();
+        $('#form-container').show();
+    };
+
+    $(document).ready(function() {
+        loadFormData(); // Load form data and handle retries
+    
+        // Handle form submission
+$('#volunteerForm').on('submit', async function(event) {
+    event.preventDefault(); // Prevent the form from submitting the traditional way
+
+    // Check if a date is selected
+    if (selectedDates.size === 0) {
+        alert("Please select at least one date.");
+        return;
+    }
+
+    // Validate required fields
+    const name = $('#name').val().trim();
+    group_name = $('#group_name').val();
+    const email = $('#email').val().trim();
+    const phone = $('#phone').val().trim();
+    const info = $('#info').val();
+    const food = $('#food').val();
+
+    if (!group_name) {
+        group_name = "individual"
+    }
+
+    // Compile the JSON objects for each selected date
+    const jsonEntries = Array.from(selectedDates).map(date => ({
+        date: date,
+        name: name,
+        email: email,
+        phone: phone,
+        info: `Group name: ${group_name} \nHelp needed: ${info} \nServing: ${food} \nOther info: ${$('#additionalInfo').val().trim()}`,
+        type: "meal_provider" // Set meal_provider as the type
+    }));
+
+    // Send each JSON entry individually to the server
+    try {
+        for (const entry of jsonEntries) {
+            const response = await fetch(`${glitchUrl}/api/volunteers`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry)
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to submit for date ${entry.date}`);
+            }
+        }
+
+        // Display success message
+        $('#resultMessage').text("Form submitted successfully!").show();
+        $('#form-container').hide();
+
+    } catch (error) {
+        console.error("Error submitting form:", error);
+        alert("There was an error submitting the form. Please try again.");
+    }
+});
+
+    });    
+</script>
+</body>
+</html>
