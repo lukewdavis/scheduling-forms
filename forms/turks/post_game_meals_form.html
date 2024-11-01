@@ -176,7 +176,11 @@
             }
 
             // Fetch existing volunteer events
-            const eventsResponse = await fetch(`${url}/api/events`);
+            const eventsResponse = await fetch(`${url}/api/events`, {
+                headers: {
+                    'Authorization': apiKey
+                }
+            });
             const events = await eventsResponse.json();
 
             // Extract dates for volunteers of type "meal_provider"
@@ -313,7 +317,7 @@ $('#volunteerForm').on('submit', async function(event) {
         for (const entry of jsonEntries) {
             const response = await fetch(`${url}/api/volunteers`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
                 body: JSON.stringify(entry)
             });
 

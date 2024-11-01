@@ -155,6 +155,8 @@
     const params = new URLSearchParams(window.location.search);
     const apiKey = params.get('api_key'); // Change 'api_key' to the name of your parameter
 
+    console.log("API_KEY: ", apiKey);
+
     const fetchAllowedDates = async () => {
         try {
             const allowedDatesResponse = await fetch(`${url}/allowed-dates`, {
@@ -170,7 +172,11 @@
             }
 
             // Fetch existing volunteer events
-            const eventsResponse = await fetch(`${url}/api/events`);
+            const eventsResponse = await fetch(`${url}/api/events`, {
+                headers : {
+                    'Authorization': apiKey
+                }
+            });
             const events = await eventsResponse.json();
 
             // Extract dates for volunteers of type "performer"
@@ -306,7 +312,7 @@ $('#volunteerForm').on('submit', async function(event) {
         for (const entry of jsonEntries) {
             const response = await fetch(`${url}/api/volunteers`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
                 body: JSON.stringify(entry)
             });
 
