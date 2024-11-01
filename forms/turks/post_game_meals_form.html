@@ -154,13 +154,20 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
 <script>
-    const glitchUrl = 'https://shared-skitter-bronze.glitch.me/';
+    const url = 'https://scheduling-app.thelukedavis.com/';
     let allowedDates = [];
     let selectedDates = new Set(); // Track selected dates
+    // Get the API key from the URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const apiKey = params.get('api_key'); // Change 'api_key' to the name of your parameter
 
     const fetchAllowedDates = async () => {
         try {
-            const allowedDatesResponse = await fetch(`${glitchUrl}/allowed-dates`);
+            const allowedDatesResponse = await fetch(`${url}/allowed-dates`, {
+                headers: {
+                    'Authorization': apiKey
+                }
+            });
             const allowedDatesData = await allowedDatesResponse.json();
             const allowedDates = allowedDatesData.allowedDates;
 
@@ -169,7 +176,7 @@
             }
 
             // Fetch existing volunteer events
-            const eventsResponse = await fetch(`${glitchUrl}/api/events`);
+            const eventsResponse = await fetch(`${url}/api/events`);
             const events = await eventsResponse.json();
 
             // Extract dates for volunteers of type "meal_provider"
@@ -258,7 +265,7 @@
                 await renderCalendar();
                 break; // Break the loop if successful
             } catch (error) {
-                console.warn("Retrying to fetch data from Glitch...", error);
+                console.warn("Retrying to fetch data...", error);
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
             }
         }
@@ -304,7 +311,7 @@ $('#volunteerForm').on('submit', async function(event) {
     // Send each JSON entry individually to the server
     try {
         for (const entry of jsonEntries) {
-            const response = await fetch(`${glitchUrl}/api/volunteers`, {
+            const response = await fetch(`${url}/api/volunteers`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(entry)
