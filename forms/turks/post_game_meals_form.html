@@ -161,6 +161,8 @@
     const params = new URLSearchParams(window.location.search);
     const apiKey = params.get('api_key'); // Change 'api_key' to the name of your parameter
 
+    console.log("API_KEY: ", apiKey);
+
     const fetchAllowedDates = async () => {
         try {
             const allowedDatesResponse = await fetch(`${url}/allowed-dates`, {
