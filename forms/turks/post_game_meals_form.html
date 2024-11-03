@@ -43,6 +43,7 @@
         .calendar-container {
             flex: 1;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             padding: 20px;
         }
@@ -92,6 +93,22 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        @media only screen and (max-width: 768px) {
+            #form-container {
+                display: flex;
+                flex-direction: column; /* Stack elements vertically */
+            }
+
+            .calendar-container {
+                display: block;
+                order: -1; /* Bring the calendar container to the top */
+            }
+
+            button {
+                align-self: flex-start; /* Align the button to the left */
+            }
         }
         
     </style>
@@ -152,7 +169,7 @@
     </div>
     
     <div class="calendar-container">
-        <div id="calendar"></div>
+        <div id="calendar" style="margin-bottom: 20px;"></div>
 
         <label for="date">Selected Dates (Please select the dates on the calendar):</label>
         <input type="text" id="date" name="date" required readonly><br/>
