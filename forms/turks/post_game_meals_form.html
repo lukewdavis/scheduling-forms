@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National Anthem Form</title>
+    <title>Post Game Meals Form</title>
     <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
     <style>
         body {
@@ -107,6 +107,11 @@
 <p id="resultMessage" style="display: none;"></p>
 
 <div id="form-container" style="display: none;">
+    <p>
+        We appreciate your interest in providing a meal for the Turks. Please fill out the form below to reserve your date(s)
+        to provide a meal. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
+    </p>
+
     <div id="form-area">
         <form id="volunteerForm">
             <label for="name">Your Name/Point of Contact:</label>
@@ -134,18 +139,12 @@
             
             <p>
                 In the following field, please provide any other information that you think may be helpful for us. If you will be having people help serve,
-                please let us know how many people will be helping. Also, please tell us a little about yourself/your organization. We enjoy giving
-                credit where credit is due.
+                please let us know how many people will be helping. Also, please tell us a little about yourself/your organization. Adding a link to your website is always helpful! 
+                We enjoy giving credit to our amazing volunteers where credit is due.
             </p>
 
             <label for="additionalInfo">Additional Information:</label>
             <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide any additional information here..."></textarea><br/>
-
-            <p>
-                Please select dates on the calendar.
-            </p>
-            <label for="date">Selected Dates:</label>
-            <input type="text" id="date" name="date" required readonly><br/>
             
             <button type="submit">Submit</button>
         </form>
@@ -154,6 +153,9 @@
     
     <div class="calendar-container">
         <div id="calendar"></div>
+
+        <label for="date">Selected Dates (Please select the dates on the calendar):</label>
+        <input type="text" id="date" name="date" required readonly><br/>
     </div>
 </div>
 </div>
@@ -217,23 +219,19 @@
             select: function(startDate) {
                 const dateStr = moment(startDate).format('YYYY-MM-DD');
 
-                const cell = $(`td[data-date="${dateStr}"]`);
-
                 if (allowedDates.includes(dateStr)) {
                     if (selectedDates.has(dateStr)) {
                         // Deselect the date
                         selectedDates.delete(dateStr);
-                        cell.removeClass('selected-date');
                     } else {
                         // Select the date
                         selectedDates.add(dateStr);
-                        cell.addClass('selected-date');
                     }
-
-                    $('#date').val(Array.from(selectedDates).join(', '));
                     
+                    $('#date').val(Array.from(selectedDates).join(', '));
+
                     // Update the calendar display
-                    // updateEventDisplay();
+                    updateEventDisplay();
                 }
             },
             dayRender: function(date, cell) {
@@ -244,14 +242,20 @@
                 } else {
                     cell.addClass('other-date');
                 }
-
-                // Also color selected dates if already in selectedDates set
-                if (selectedDates.has(dateStr)) {
-                    cell.addClass('selected-date');
-                }
             },
             events: [], // No events from remote API
-            height: 'auto'
+            height: 'auto',
+            eventClick: function(event, jsEvent, view) {
+                const dateStr = moment(event.start).format('YYYY-MM-DD');
+
+                if (selectedDates.has(dateStr)) {
+                    // Deselect the event date
+                    selectedDates.delete(dateStr);
+                    // Remove the event from the calendar
+                    $('#calendar').fullCalendar('removeEvents', event._id);
+                    $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                }
+            },
         });
     };
 
@@ -288,61 +292,93 @@
         loadFormData(); // Load form data and handle retries
     
         // Handle form submission
-$('#volunteerForm').on('submit', async function(event) {
-    event.preventDefault(); // Prevent the form from submitting the traditional way
+        $('#volunteerForm').on('submit', async function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
 
-    // Check if a date is selected
-    if (selectedDates.size === 0) {
-        alert("Please select at least one date.");
-        return;
-    }
-
-    // Validate required fields
-    const name = $('#name').val().trim();
-    group_name = $('#group_name').val();
-    const email = $('#email').val().trim();
-    const phone = $('#phone').val().trim();
-    const info = $('#info').val();
-    const food = $('#food').val();
-
-    if (!group_name) {
-        group_name = "individual"
-    }
-
-    // Compile the JSON objects for each selected date
-    const jsonEntries = Array.from(selectedDates).map(date => ({
-        date: date,
-        name: name,
-        email: email,
-        phone: phone,
-        info: `Group name: ${group_name} \nHelp needed: ${info} \nServing: ${food} \nOther info: ${$('#additionalInfo').val().trim()}`,
-        type: "meal_provider" // Set meal_provider as the type
-    }));
-
-    // Send each JSON entry individually to the server
-    try {
-        for (const entry of jsonEntries) {
-            const response = await fetch(`${url}/api/volunteers`, {
-                method: 'POST',
-                headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to submit for date ${entry.date}`);
+            // Check if a date is selected
+            if (selectedDates.size === 0) {
+                alert("Please select at least one date.");
+                return;
             }
-        }
 
-        // Display success message
-        $('#resultMessage').text("Form submitted successfully!").show();
-        $('#form-container').hide();
+            // Validate required fields
+            const name = $('#name').val().trim();
+            group_name = $('#group_name').val();
+            const email = $('#email').val().trim();
+            const phone = $('#phone').val().trim();
+            const info = $('#info').val();
+            const food = $('#food').val();
 
-    } catch (error) {
-        console.error("Error submitting form:", error);
-        alert("There was an error submitting the form. Please try again.");
-    }
-});
+            if (!group_name) {
+                group_name = "individual"
+            }
 
+            // Compile the JSON objects for each selected date
+            const jsonEntries = Array.from(selectedDates).map(date => ({
+                date: date,
+                name: name,
+                email: email,
+                phone: phone,
+                info: `Group name: ${group_name} \nHelp needed: ${info} \nServing: ${food} \nOther info: ${$('#additionalInfo').val().trim()}`,
+                type: "meal_provider" // Set meal_provider as the type
+            }));
+
+            // Send each JSON entry individually to the server
+            try {
+                for (const entry of jsonEntries) {
+                    const response = await fetch(`${url}/api/volunteers`, {
+                        method: 'POST',
+                        headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(entry)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to submit for date ${entry.date}`);
+                    }
+                }
+
+                // Create an array of participant details
+                const participantDetails = jsonEntries.map(entry => `
+                <h2><strong>${entry.date}</strong><h2>
+                <p>
+                    <strong>Name:</strong> ${entry.name}<br/>
+                    <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
+                    <strong>Phone:</strong> ${entry.phone}<br/>
+                    <strong>Info:</strong> ${entry.info} <br/>
+                </p>
+                `).join('');
+
+                // Format the email message as HTML
+                const message = `
+                    <p>The following dates have been reserved for post game meals.<br/></p>
+
+                    ${participantDetails}
+
+                    <p>These meals have been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">this link</a>.</p>
+                `;
+
+                // Use fetch to send the email
+                const response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subject: "Post Game Meal Form Submitted",
+                        message: message
+                    })
+                });
+
+                // Display success message
+                $('#resultMessage').text("Form submitted successfully!").show();
+                $('#form-container').hide();
+
+            } catch (error) {
+                console.error("Error submitting form:", error);
+                alert("There was an error submitting the form. Please try again.");
+            }
+        });
     });    
 </script>
 </body>
