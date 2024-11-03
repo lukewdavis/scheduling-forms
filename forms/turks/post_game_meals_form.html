@@ -125,16 +125,25 @@
             <select id="info" name="info" required>
                 <option value="">Select an option</option>
                 <option value="This group will serve their own food">We will serve the food.</option>
-                <option value="Turks staff will serve food">We will need the Turks staff to serve the food.</option>
+                <option value="Turks staff will be serving food">We will need the Turks staff to serve the food.</option>
                 <option value="This group will need help serving food">We will have some people to help serve food but may need help.</option>
             </select><br/>
 
             <label for="food">What will you be serving?</label>
             <textarea id="food" name="food" placeholder="Provide a description of what you will be serving..."></textarea><br/>
             
+            <p>
+                In the following field, please provide any other information that you think may be helpful for us. If you will be having people help serve,
+                please let us know how many people will be helping. Also, please tell us a little about yourself/your organization. We enjoy giving
+                credit where credit is due.
+            </p>
+
             <label for="additionalInfo">Additional Information:</label>
             <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide any additional information here..."></textarea><br/>
 
+            <p>
+                Please select dates on the calendar.
+            </p>
             <label for="date">Selected Dates:</label>
             <input type="text" id="date" name="date" required readonly><br/>
             
@@ -208,19 +217,23 @@
             select: function(startDate) {
                 const dateStr = moment(startDate).format('YYYY-MM-DD');
 
+                const cell = $(`td[data-date="${dateStr}"]`);
+
                 if (allowedDates.includes(dateStr)) {
                     if (selectedDates.has(dateStr)) {
                         // Deselect the date
                         selectedDates.delete(dateStr);
-                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                        cell.removeClass('selected-date');
                     } else {
                         // Select the date
                         selectedDates.add(dateStr);
-                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                        cell.addClass('selected-date');
                     }
+
+                    $('#date').val(Array.from(selectedDates).join(', '));
                     
                     // Update the calendar display
-                    updateEventDisplay();
+                    // updateEventDisplay();
                 }
             },
             dayRender: function(date, cell) {
@@ -231,20 +244,14 @@
                 } else {
                     cell.addClass('other-date');
                 }
-            },
-            events: [], // No events from remote API
-            height: 'auto',
-            eventClick: function(event, jsEvent, view) {
-                const dateStr = moment(event.start).format('YYYY-MM-DD');
 
+                // Also color selected dates if already in selectedDates set
                 if (selectedDates.has(dateStr)) {
-                    // Deselect the event date
-                    selectedDates.delete(dateStr);
-                    // Remove the event from the calendar
-                    $('#calendar').fullCalendar('removeEvents', event._id);
-                    $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+                    cell.addClass('selected-date');
                 }
             },
+            events: [], // No events from remote API
+            height: 'auto'
         });
     };
 
