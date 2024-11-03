@@ -106,12 +106,12 @@
 
 <p id="resultMessage" style="display: none;"></p>
 
-<div id="form-container" style="display: none;">
-    <p>
-        We appreciate your interest in providing a meal for the Turks. Please fill out the form below to reserve your date(s)
-        to provide a meal. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
-    </p>
+<p id="greeting" style="display: none;">
+    We appreciate your interest in providing a meal for the Turks. Please fill out the form below to reserve your date(s)
+    to provide a meal. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
+</p>
 
+<div id="form-container" style="display: none;">
     <div id="form-area">
         <form id="volunteerForm">
             <label for="name">Your Name/Point of Contact:</label>
@@ -286,6 +286,7 @@
         }
         $('#loading').hide();
         $('#form-container').show();
+        $('#greeting').show();
     };
 
     $(document).ready(function() {
@@ -373,6 +374,7 @@
                 // Display success message
                 $('#resultMessage').text("Form submitted successfully!").show();
                 $('#form-container').hide();
+                $('#greeting').hide();
 
             } catch (error) {
                 console.error("Error submitting form:", error);
