@@ -44,7 +44,6 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             padding: 20px;
         }
         input, select, textarea {
@@ -104,6 +103,7 @@
             .calendar-container {
                 display: block;
                 order: -1; /* Bring the calendar container to the top */
+                padding-bottom: 0px;
             }
 
             button {
@@ -376,7 +376,7 @@
                 `;
 
                 // Use fetch to send the email
-                const response = await fetch('/api/send-email', {
+                const response = await fetch(`${url}/api/send-email`, {
                     method: 'POST',
                     headers: {
                         'Authorization': apiKey,
