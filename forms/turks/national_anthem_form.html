@@ -43,7 +43,7 @@
         .calendar-container {
             flex: 1;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             padding: 20px;
         }
         input, select, textarea {
@@ -93,6 +93,23 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        @media only screen and (max-width: 768px) {
+            #form-container {
+                display: flex;
+                flex-direction: column; /* Stack elements vertically */
+            }
+
+            .calendar-container {
+                display: block;
+                order: -1; /* Bring the calendar container to the top */
+                padding-bottom: 0px;
+            }
+
+            button {
+                align-self: flex-start; /* Align the button to the left */
+            }
+        }
         
     </style>
 </head>
@@ -105,6 +122,11 @@
 </div>
 
 <p id="resultMessage" style="display: none;"></p>
+
+<p id="greeting" style="display: none;">
+    We appreciate your interest in performing the National Anthem for the Turks. Please fill out the form below to reserve your date(s)
+    for performing. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
+</p>
 
 <div id="form-container" style="display: none;">
     <div id="form-area">
@@ -125,12 +147,16 @@
                 <option value="voices">Voices</option>
                 <option value="both">Both Instruments and Voices</option>
             </select><br/>
+
+            <p>
+                In the following field, please provide any other information that you think may be helpful for us. This information will be used to
+                help our announcer announce you/your group before your performance. Also, please tell us a little about yourself/your group. 
+                Adding a link to your website is always helpful as well! If you are a part of a group, please make sure to include all group members names.
+                We enjoy giving credit to our amazing performers where credit is due.
+            </p>
             
             <label for="additionalInfo">Additional Information:</label>
             <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide additional information here..."></textarea><br/>
-
-            <label for="date">Selected Dates:</label>
-            <input type="text" id="date" name="date" required readonly><br/>
             
             <button type="submit">Submit</button>
         </form>
@@ -139,6 +165,9 @@
     
     <div class="calendar-container">
         <div id="calendar"></div>
+
+        <label for="date">Selected Dates:</label>
+        <input type="text" id="date" name="date" required readonly><br/>
     </div>
 </div>
 </div>
@@ -269,6 +298,7 @@
         }
         $('#loading').hide();
         $('#form-container').show();
+        $('#greeting').show();
     };
 
     $(document).ready(function() {
@@ -319,9 +349,44 @@ $('#volunteerForm').on('submit', async function(event) {
             }
         }
 
+        // Create an array of participant details
+        const participantDetails = jsonEntries.map(entry => `
+        <h3><strong>${entry.date}</strong></h3>
+        <p>
+            <strong>Name:</strong> ${entry.name}<br/>
+            <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
+            <strong>Phone:</strong> ${entry.phone}<br/>
+            <strong>Info:</strong> ${entry.info} <br/>
+        </p>
+        `).join('');
+
+        // Format the email message as HTML
+        const message = `
+            <p>The following dates have been reserved for the National Anthem.<br/></p>
+
+            ${participantDetails}
+
+            <p>These performers have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
+            <p>&copy; This email is intended for the Harrisonburg Turks and was generated with software by Luke Davis. All Rights Reserved.</p>
+        `;
+
+        // Use fetch to send the email
+        const response = await fetch(`${url}/api/send-email`, {
+            method: 'POST',
+            headers: {
+                'Authorization': apiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                subject: "Post Game Meal Form Submitted",
+                message: message
+            })
+        });
+
         // Display success message
         $('#resultMessage').text("Form submitted successfully!").show();
         $('#form-container').hide();
+        $('#greeting').hide();
 
     } catch (error) {
         console.error("Error submitting form:", error);

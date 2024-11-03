@@ -93,23 +93,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        @media only screen and (max-width: 768px) {
-            #form-container {
-                display: flex;
-                flex-direction: column; /* Stack elements vertically */
-            }
-
-            .calendar-container {
-                display: block;
-                order: -1; /* Bring the calendar container to the top */
-                padding-bottom: 0px;
-            }
-
-            button {
-                align-self: flex-start; /* Align the button to the left */
-            }
-        }
         
     </style>
 </head>
@@ -369,9 +352,11 @@
                 // Format the email message as HTML
                 const message = `
                     <p>The following dates have been reserved for post game meals.<br/></p>
-                    <p>These meals have been already been added to the calendar and nothing is required from you. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
 
                     ${participantDetails}
+
+                    <p>These meals have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
+                    <p>&copy; This email is intended for the Harrisonburg Turks and was generated with software by Luke Davis. All Rights Reserved.</p>
                 `;
 
                 // Use fetch to send the email
