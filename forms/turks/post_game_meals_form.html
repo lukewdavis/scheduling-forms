@@ -357,7 +357,7 @@
 
                 // Create an array of participant details
                 const participantDetails = jsonEntries.map(entry => `
-                <h2><strong>${entry.date}</strong></h2>
+                <h3><strong>${entry.date}</strong></h3>
                 <p>
                     <strong>Name:</strong> ${entry.name}<br/>
                     <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
@@ -369,10 +369,9 @@
                 // Format the email message as HTML
                 const message = `
                     <p>The following dates have been reserved for post game meals.<br/></p>
+                    <p>These meals have been already been added to the calendar and nothing is required from you. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
 
                     ${participantDetails}
-
-                    <p>These meals have been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">this link</a>.</p>
                 `;
 
                 // Use fetch to send the email
