@@ -373,7 +373,6 @@ $('#volunteerForm').on('submit', async function(event) {
         // Use fetch to send the email
         const response = await fetch(`${url}/api/send-email`, {
             method: 'POST',
-            mode: "no-cors",
             headers: {
                 'Authorization': apiKey,
                 'Content-Type': 'application/json'
