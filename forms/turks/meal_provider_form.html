@@ -259,6 +259,26 @@
         });
     };
 
+    const formatDate = (dateStr) => {
+        const [year, month, day] = dateStr.split('-');
+        const date = new Date(year, month - 1, day); // month - 1 because months are 0-indexed
+    
+        const dayOfWeek = date.toLocaleString('en-US', { weekday: 'long' });
+        const monthName = date.toLocaleString('en-US', { month: 'long' });
+        const dayNumber = date.getDate();
+        const yearNumber = date.getFullYear();
+    
+        // Add suffix to day
+        const suffix = (day) => {
+            if (day % 10 === 1 && day !== 11) return "st";
+            if (day % 10 === 2 && day !== 12) return "nd";
+            if (day % 10 === 3 && day !== 13) return "rd";
+            return "th";
+        };
+    
+        return `${dayOfWeek}, ${monthName} ${dayNumber}${suffix(dayNumber)}, ${yearNumber}`;
+    };
+
     const updateEventDisplay = () => {
         // Clear existing events from the calendar
         $('#calendar').fullCalendar('removeEvents');
@@ -340,7 +360,7 @@
 
                 // Create an array of participant details
                 const participantDetails = jsonEntries.map(entry => `
-                <h3><strong>${entry.date}</strong></h3>
+                <h3><strong>${formatDate(entry.date)}</strong></h3>
                 <p>
                     <strong>Name:</strong> ${entry.name}<br/>
                     <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
@@ -372,7 +392,7 @@
 
                 // Create an array of participant details
                 const externalDetails = jsonEntries.map(entry => `
-                <h3><strong>${entry.date}</strong></h3>
+                <h2><strong>${formatDate(entry.date)}</strong></h2>
                 `).join('');
 
                 // Format the email message as HTML
