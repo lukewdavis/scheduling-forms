@@ -93,6 +93,23 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        @media only screen and (max-width: 768px) {
+            #form-container {
+                display: flex;
+                flex-direction: column; /* Stack elements vertically */
+            }
+
+            .calendar-container {
+                display: block;
+                order: -1; /* Bring the calendar container to the top */
+                padding-bottom: 0px;
+            }
+
+            button {
+                align-self: flex-start; /* Align the button to the left */
+            }
+        }
         
     </style>
 </head>
