@@ -363,11 +363,9 @@ $('#volunteerForm').on('submit', async function(event) {
         // Format the email message as HTML
         const message = `
             <p>The following dates have been reserved for the National Anthem.<br/></p>
+            <p>These performers have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
 
             ${participantDetails}
-
-            <p>These performers have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
-            <p>&copy; This email is intended for the Harrisonburg Turks and was generated with software by Luke Davis. All Rights Reserved.</p>
         `;
 
         // Use fetch to send the email
@@ -380,6 +378,47 @@ $('#volunteerForm').on('submit', async function(event) {
             body: JSON.stringify({
                 subject: "National Anthem Form Submitted",
                 message: message
+            })
+        });
+
+        // Create an array of participant details
+        const externalDetails = jsonEntries.map(entry => `
+        <h3><strong>${entry.date}</strong></h3>
+        `).join('');
+
+        // Format the email message as HTML
+        const externalMessage = `
+            <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to perform the National Anthem for the following dates:<br/></p>
+
+            ${externalDetails}
+
+            <h3>Game Time and Performer Arrival Details</h3>
+            <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>
+
+            <ul>
+                <li><strong>Monday-Saturday Games:</strong> Please arrive between 6:30 and 6:45 PM.</li>
+                <li><strong>Sunday Games:</strong> Please arrive between 4:30 and 4:45 PM.</li>
+            </ul>
+
+            <p>Upon arrival, please enter through the main gate and let the admissions staff know you're performing. They will direct you to the merchandise stand, where you will meet Lisa Harman, who will assist with your setup and escort you to the field.</p>
+
+            <p>If you are performing with a group, kindly inform admissions of the total number of performers in your party. Each performer receives free admission, along with one complimentary guest admission. Additional guests will need to purchase regular admission.</p>
+
+            <p>Thank you for being a part of our team, and we look forward to your performance!</p>
+        `;
+
+        // Use fetch to send the email
+        const externalSend = await fetch(`${url}/api/send-email`, {
+            method: 'POST',
+            headers: {
+                'Authorization': apiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                subject: "National Anthem Confirmation",
+                message: externalMessage,
+                toEmail: jsonEntries[0].email,
+                toName: jsonEntries[0].name
             })
         });
 
