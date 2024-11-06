@@ -403,7 +403,7 @@ $('#volunteerForm').on('submit', async function(event) {
 
         // Create an array of participant details
         const externalDetails = jsonEntries.map(entry => `
-        <h2><strong>${formatDate(entry.date)}</strong></h2>
+        <h3><strong>${formatDate(entry.date)}</strong></h3>
         `).join('');
 
         // Format the email message as HTML
@@ -412,7 +412,7 @@ $('#volunteerForm').on('submit', async function(event) {
 
             ${externalDetails}
 
-            <h3>Game Time and Performer Arrival Details</h3>
+            <h2>Game Time and Performer Arrival Details</h2>
             <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>
 
             <ul>

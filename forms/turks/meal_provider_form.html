@@ -392,7 +392,7 @@
 
                 // Create an array of participant details
                 const externalDetails = jsonEntries.map(entry => `
-                <h2><strong>${formatDate(entry.date)}</strong></h2>
+                <h3><strong>${formatDate(entry.date)}</strong></h3>
                 `).join('');
 
                 // Format the email message as HTML
@@ -401,7 +401,7 @@
 
                     ${externalDetails}
 
-                    <h3>Game Time and Meal Arrival Details</h3>
+                    <h2>Game Time and Meal Arrival Details</h2>
                     <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All meal providers are kindly asked to arrive sometime between the 7th and 8th inning. This will help us ensure we have enough time to set up for the players. It is
                         hard to gauge an exact time for arrival since game lengths vary from game to game. Below are the game start times and an estimated arrival time.
                     </p>
