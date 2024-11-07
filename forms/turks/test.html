@@ -94,21 +94,23 @@
 
         /* Media query for mobile - show Flatpickr */
         @media (max-width: 768px) {
+            #form-container {
+                display: flex;
+                flex-direction: column; /* Stack elements vertically */
+            }
+
             .calendar-container {
                 display: none; /* Hide FullCalendar on mobile */
             }
-            #flatpickr-container {
-                display: block; /* Show Flatpickr on mobile */
-            }
-        }
 
-        /* Media query for desktop - show FullCalendar */
-        @media (min-width: 769px) {
             #flatpickr-container {
-                display: none; /* Hide Flatpickr on desktop */
+                display: block;
+                order: -1; /* Bring the calendar container to the top */
+                padding-bottom: 0px;
             }
-            .calendar-container {
-                display: block; /* Show FullCalendar on desktop */
+
+            button {
+                align-self: flex-start; /* Align the button to the left */
             }
         }
     </style>
@@ -169,13 +171,15 @@
     
     <!-- Flatpickr Calendar (Mobile Only) -->
     <div id="flatpickr-container" style="display: none;">
-        <label for="date">Selected Dates (Please select the dates on the calendar):</label>
-        <input type="text" id="date" name="date" required readonly><br/>
+        <label for="flatpick-date">Selected Dates:</label>
+        <input type="text" id="flatpick-date" name="date" required readonly><br/>
     </div>
 
     <!-- FullCalendar Container (Desktop Only) -->
     <div class="calendar-container">
         <div id="calendar"></div>
+        <label for="date">Selected Dates:</label>
+        <input type="text" id="date" name="date" required readonly><br/>
     </div>
 </div>
 
@@ -229,7 +233,7 @@
     const renderFlatpickr = async () => {
         allowedDates = await fetchAllowedDates();
 
-        flatpickr("#date", {
+        flatpickr("#flatpick-date", {
             mode: "multiple",
             dateFormat: "Y-m-d",
             disable: [
