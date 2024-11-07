@@ -333,6 +333,10 @@
         $('#volunteerForm').on('submit', async function(event) {
             event.preventDefault(); // Prevent the form from submitting the traditional way
 
+            $('#loading').show();
+            $('#form-container').hide();
+            $('#greeting').hide();
+
             // Check if a date is selected
             if (selectedDates.size === 0) {
                 alert("Please select at least one date.");
@@ -453,11 +457,15 @@
                 });
 
                 // Display success message
+                $('#loading').hide();
                 $('#resultMessage').text("Form submitted successfully!").show();
-                $('#form-container').hide();
                 $('#greeting').hide();
 
             } catch (error) {
+                $('#loading').hide();
+                $('#greeting').show();
+                $('#form-container').show();
+
                 console.error("Error submitting form:", error);
                 alert("There was an error submitting the form. Please try again.");
             }
