@@ -376,7 +376,7 @@ $('#volunteerForm').on('submit', async function(event) {
             <strong>Name:</strong> ${entry.name}<br/>
             <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
             <strong>Phone:</strong> ${entry.phone}<br/>
-            <strong>Info:</strong> ${entry.info} <br/>
+            <strong>Info:</strong> <br/>${entry.info.replace(/\n/g, "<br>")} <br/>
         </p>
         `).join('');
 
@@ -403,14 +403,14 @@ $('#volunteerForm').on('submit', async function(event) {
 
         // Create an array of participant details
         const externalDetails = jsonEntries.map(entry => `
-        <h3><strong>${formatDate(entry.date)}</strong></h3>
-        `).join('');
+        ${formatDate(entry.date)}
+        `).join(',');
 
         // Format the email message as HTML
         const externalMessage = `
             <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to perform the National Anthem for the following dates:<br/></p>
 
-            ${externalDetails}
+            <p>${externalDetails}</p>
 
             <h2>Game Time and Performer Arrival Details</h2>
             <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>

@@ -382,7 +382,7 @@
                     <strong>Name:</strong> ${entry.name}<br/>
                     <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
                     <strong>Phone:</strong> ${entry.phone}<br/>
-                    <strong>Info:</strong> ${entry.info} <br/>
+                    <strong>Info:</strong><br> ${entry.info.replace(/\n/g, "<br>")} <br/>
                 </p>
                 `).join('');
 
