@@ -1,13 +1,11 @@
-<!-- Here is the embed link -->
-<!-- <iframe src="url_to_source" style="width: 100%; height: 100vh; border: none;" onload="this.contentWindow.document.getElementById('content').innerHTML = this.contentWindow.document.body.innerHTML;"></iframe> -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National Anthem Form</title>
-    <link href='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css' rel='stylesheet' />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.9/flatpickr.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@3.9.0/dist/fullcalendar.min.css" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,6 +43,9 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
+        }
+        #flatpickr-container {
+            display: none;
         }
         input, select, textarea {
             width: calc(100% - 20px);
@@ -88,29 +89,33 @@
             height: 40px;
             animation: spin 2s linear infinite;
         }
-        
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        @media only screen and (max-width: 768px) {
+        /* Media query for mobile - show Flatpickr */
+        @media (max-width: 768px) {
             #form-container {
                 display: flex;
                 flex-direction: column; /* Stack elements vertically */
             }
 
-            .calendar-container {
+            #calendar-container {
+                display: none; /* Hide FullCalendar on mobile */
+            }
+
+            #flatpickr-container {
                 display: block;
                 order: -1; /* Bring the calendar container to the top */
-                padding-bottom: 0px;
+                padding: 20px 20px 0px 20px;
             }
 
             button {
                 align-self: flex-start; /* Align the button to the left */
             }
         }
-        
     </style>
 </head>
 <body>
@@ -163,19 +168,24 @@
         
     </div>
     
-    <div class="calendar-container">
-        <div id="calendar"></div>
+    <!-- Flatpickr Calendar (Mobile Only) -->
+    <div id="flatpickr-container">
+        <label for="flatpick-date">Selected Dates:</label>
+        <input type="text" id="flatpick-date" name="date" required readonly><br/>
+    </div>
 
+    <!-- FullCalendar Container (Desktop Only) -->
+    <div id="calendar-container" class="calendar-container">
+        <div id="calendar"></div>
         <label for="date">Selected Dates:</label>
         <input type="text" id="date" name="date" required readonly><br/>
     </div>
 </div>
-</div>
 
-
-<script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
-<script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@3.9.0/dist/fullcalendar.min.js"></script>
 <script>
     const url = 'https://scheduling-app.thelukedavis.com';
     let allowedDates = [];
@@ -219,6 +229,22 @@
         }
     };
 
+    const renderFlatpickr = async () => {
+        allowedDates = await fetchAllowedDates();
+
+        flatpickr("#flatpick-date", {
+            mode: "multiple",
+            dateFormat: "Y-m-d",
+            disable: [
+                (date) => !allowedDates.includes(moment(date).format('YYYY-MM-DD')),
+            ],
+            onChange: (selectedDatesArr) => {
+                selectedDates = new Set(selectedDatesArr.map(date => moment(date).format('YYYY-MM-DD')));
+                document.getElementById("date").value = Array.from(selectedDates).join(", ");
+            },
+        });
+    };
+
     const renderCalendar = async () => {
         allowedDates = await fetchAllowedDates();
 
@@ -235,13 +261,13 @@
                     if (selectedDates.has(dateStr)) {
                         // Deselect the date
                         selectedDates.delete(dateStr);
-                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
                     } else {
                         // Select the date
                         selectedDates.add(dateStr);
-                        $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
                     }
                     
+                    $('#date').val(Array.from(selectedDates).join(', '));
+
                     // Update the calendar display
                     updateEventDisplay();
                 }
@@ -310,9 +336,10 @@
         while (true) {
             try {
                 await renderCalendar();
+                await renderFlatpickr();
                 break; // Break the loop if successful
             } catch (error) {
-                console.warn("Retrying to fetch data from Glitch...", error);
+                console.warn("Retrying to fetch data...", error);
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
             }
         }
@@ -325,144 +352,143 @@
         loadFormData(); // Load form data and handle retries
     
         // Handle form submission
-$('#volunteerForm').on('submit', async function(event) {
-    event.preventDefault(); // Prevent the form from submitting the traditional way
+        $('#volunteerForm').on('submit', async function(event) {
+            event.preventDefault(); // Prevent the form from submitting the traditional way
 
-    $('#loading').show();
-    $('#form-container').hide();
-    $('#greeting').hide();
+            $('#loading').show();
+            $('#form-container').hide();
+            $('#greeting').hide();
 
-    // Check if a date is selected
-    if (selectedDates.size === 0) {
-        alert("Please select at least one date.");
-        return;
-    }
-
-    // Validate required fields
-    const name = $('#name').val().trim();
-    const email = $('#email').val().trim();
-    const phone = $('#phone').val().trim();
-    const info = $('#info').val();
-
-    if (!name || !email || !phone || !info) {
-        alert("Please fill out all required fields.");
-        return;
-    }
-
-    // Compile the JSON objects for each selected date
-    const jsonEntries = Array.from(selectedDates).map(date => ({
-        date: date,
-        name: name,
-        email: email,
-        phone: phone,
-        info: `Performance type: ${info}\nOther info: ${$('#additionalInfo').val().trim()}`,
-        type: "performer" // Set performer as the type
-    }));
-
-    // Send each JSON entry individually to the server
-    try {
-        for (const entry of jsonEntries) {
-            const response = await fetch(`${url}/api/volunteers`, {
-                method: 'POST',
-                headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry)
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to submit for date ${entry.date}`);
+            // Check if a date is selected
+            if (selectedDates.size === 0) {
+                alert("Please select at least one date.");
+                return;
             }
-        }
 
-        // Create an array of participant details
-        const participantDetails = jsonEntries.map(entry => `
-        <h3><strong>${formatDate(entry.date)}</strong></h3>
-        <p>
-            <strong>Name:</strong> ${entry.name}<br/>
-            <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
-            <strong>Phone:</strong> ${entry.phone}<br/>
-            <strong>Info:</strong> <br/>${entry.info.replace(/\n/g, "<br>")} <br/>
-        </p>
-        `).join('');
+            // Validate required fields
+            const name = $('#name').val().trim();
+            const email = $('#email').val().trim();
+            const phone = $('#phone').val().trim();
+            const info = $('#info').val();
 
-        // Format the email message as HTML
-        const message = `
-            <p>The following dates have been reserved for the National Anthem.<br/></p>
-            <p>These performers have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
+            if (!name || !email || !phone || !info) {
+                alert("Please fill out all required fields.");
+                return;
+            }
 
-            ${participantDetails}
-        `;
+            // Compile the JSON objects for each selected date
+            const jsonEntries = Array.from(selectedDates).map(date => ({
+                date: date,
+                name: name,
+                email: email,
+                phone: phone,
+                info: `Performance type: ${info}\nOther info: ${$('#additionalInfo').val().trim()}`,
+                type: "performer" // Set performer as the type
+            }));
 
-        // Use fetch to send the email
-        const response = await fetch(`${url}/api/send-email`, {
-            method: 'POST',
-            headers: {
-                'Authorization': apiKey,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                subject: "National Anthem Form Submitted",
-                message: message
-            })
+            // Send each JSON entry individually to the server
+            try {
+                for (const entry of jsonEntries) {
+                    const response = await fetch(`${url}/api/volunteers`, {
+                        method: 'POST',
+                        headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(entry)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to submit for date ${entry.date}`);
+                    }
+                }
+
+                // Create an array of participant details
+                const participantDetails = jsonEntries.map(entry => `
+                <h3><strong>${formatDate(entry.date)}</strong></h3>
+                <p>
+                    <strong>Name:</strong> ${entry.name}<br/>
+                    <strong>Email:</strong> <a href="mailto:${entry.email}">${entry.email}</a><br/>
+                    <strong>Phone:</strong> ${entry.phone}<br/>
+                    <strong>Info:</strong> <br/>${entry.info.replace(/\n/g, "<br>")} <br/>
+                </p>
+                `).join('');
+
+                // Format the email message as HTML
+                const message = `
+                    <p>The following dates have been reserved for the National Anthem.<br/></p>
+                    <p>These performers have already been added to the calendar. To view the calendar please visit <a href="https://scheduling-app.thelukedavis.com/">https://scheduling-app.thelukedavis.com/</a>.<br/></p>
+
+                    ${participantDetails}
+                `;
+
+                // Use fetch to send the email
+                const response = await fetch(`${url}/api/send-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subject: "National Anthem Form Submitted",
+                        message: message
+                    })
+                });
+
+                // Create an array of participant details
+                const externalDetails = jsonEntries.map(entry => `
+                <li>${formatDate(entry.date)}</li>
+                `).join('');
+
+                // Format the email message as HTML
+                const externalMessage = `
+                    <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to perform the National Anthem for the following dates:<br/></p>
+
+                    <ul>${externalDetails}</ul>
+
+                    <h2>Game Time and Performer Arrival Details</h2>
+                    <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>
+
+                    <ul>
+                        <li><strong>Monday-Saturday Games:</strong> Please arrive between 6:30 and 6:45 PM.</li>
+                        <li><strong>Sunday Games:</strong> Please arrive between 4:30 and 4:45 PM.</li>
+                    </ul>
+
+                    <p>Upon arrival, please enter through the main gate and let the admissions staff know you're performing. They will direct you to the merchandise stand, where you will meet Lisa Harman, who will assist with your setup and escort you to the field.</p>
+
+                    <p>If you are performing with a group, kindly inform admissions of the total number of performers in your party. Each performer receives free admission, along with one complimentary guest admission. Additional guests will need to purchase regular admission tickets.</p>
+
+                    <p>If you have any questions or concerns, please email <a href="mailto:info@harrisonburgturks.com">info@harrisonburgturks.com</a>.</p>
+
+                    <p>Thank you for being a part of our team, and we look forward to your performance!</p>
+                `;
+
+                // Use fetch to send the email
+                const externalSend = await fetch(`${url}/api/send-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subject: "National Anthem Confirmation",
+                        message: externalMessage,
+                        toEmail: jsonEntries[0].email,
+                        toName: jsonEntries[0].name
+                    })
+                });
+
+                // Display success message
+                $('#loading').hide();
+                $('#resultMessage').text("Form submitted successfully!").show();
+                $('#greeting').hide();
+
+            } catch (error) {
+                $('#loading').hide();
+                $('#greeting').show();
+                $('#form-container').show();
+                console.error("Error submitting form:", error);
+                alert("There was an error submitting the form. Please try again.");
+            }
         });
-
-        // Create an array of participant details
-        const externalDetails = jsonEntries.map(entry => `
-        <li>${formatDate(entry.date)}</li>
-        `).join('');
-
-        // Format the email message as HTML
-        const externalMessage = `
-            <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to perform the National Anthem for the following dates:<br/></p>
-
-            <ul>${externalDetails}</ul>
-
-            <h2>Game Time and Performer Arrival Details</h2>
-            <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>
-
-            <ul>
-                <li><strong>Monday-Saturday Games:</strong> Please arrive between 6:30 and 6:45 PM.</li>
-                <li><strong>Sunday Games:</strong> Please arrive between 4:30 and 4:45 PM.</li>
-            </ul>
-
-            <p>Upon arrival, please enter through the main gate and let the admissions staff know you're performing. They will direct you to the merchandise stand, where you will meet Lisa Harman, who will assist with your setup and escort you to the field.</p>
-
-            <p>If you are performing with a group, kindly inform admissions of the total number of performers in your party. Each performer receives free admission, along with one complimentary guest admission. Additional guests will need to purchase regular admission tickets.</p>
-
-            <p>If you have any questions or concerns, please email <a href="mailto:info@harrisonburgturks.com">info@harrisonburgturks.com</a>.</p>
-
-            <p>Thank you for being a part of our team, and we look forward to your performance!</p>
-        `;
-
-        // Use fetch to send the email
-        const externalSend = await fetch(`${url}/api/send-email`, {
-            method: 'POST',
-            headers: {
-                'Authorization': apiKey,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                subject: "National Anthem Confirmation",
-                message: externalMessage,
-                toEmail: jsonEntries[0].email,
-                toName: jsonEntries[0].name
-            })
-        });
-
-        // Display success message
-        $('#loading').hide();
-        $('#resultMessage').text("Form submitted successfully!").show();
-        $('#greeting').hide();
-
-    } catch (error) {
-        $('#loading').hide();
-        $('#greeting').show();
-        $('#form-container').show();
-        console.error("Error submitting form:", error);
-        alert("There was an error submitting the form. Please try again.");
-    }
-});
-
-    });    
+    }); 
 </script>
 </body>
 </html>

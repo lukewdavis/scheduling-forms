@@ -129,18 +129,15 @@
 <p id="resultMessage" style="display: none;"></p>
 
 <p id="greeting" style="display: none;">
-    We appreciate your interest in providing a meal for the Turks. Please fill out the form below to reserve your date(s)
-    to provide a meal. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
+    We appreciate your interest in performing the National Anthem for the Turks. Please fill out the form below to reserve your date(s)
+    for performing. If you have any questions or issues, please contact us at <a href="mailto:info@harrisonburgturks.com?subject=Post%20Game%20Meal%20Inquiry">info@harrisonburgturks.com</a>.
 </p>
 
 <div id="form-container" style="display: none;">
     <div id="form-area">
         <form id="volunteerForm">
-            <label for="name">Your Name/Point of Contact:</label>
+            <label for="name">Name/Group Name:</label>
             <input type="text" id="name" name="name" required><br/>
-
-            <label for="group_name">Group/Organization Name (if applicable):</label>
-            <input type="text" id="group_name" name="group_name"><br/>
             
             <label for="email">Email:</label>
             <input type="email" id="email" name="email" required><br/>
@@ -148,28 +145,27 @@
             <label for="phone">Phone:</label>
             <input type="tel" id="phone" name="phone" required><br/>
             
-            <label for="info">Will you/your group be serving or do you need our staff so to serve the food for you?</label>
+            <label for="info">How will you be performing?</label>
             <select id="info" name="info" required>
                 <option value="">Select an option</option>
-                <option value="This group will serve their own food">We will serve the food.</option>
-                <option value="Turks staff will be serving food">We will need the Turks staff to serve the food.</option>
-                <option value="This group will need help serving food">We will have some people to help serve food but may need help.</option>
+                <option value="instruments">Instruments</option>
+                <option value="voices">Voices</option>
+                <option value="both">Both Instruments and Voices</option>
             </select><br/>
 
-            <label for="food">What will you be serving?</label>
-            <textarea id="food" name="food" placeholder="Provide a description of what you will be serving..."></textarea><br/>
-            
             <p>
-                In the following field, please provide any other information that you think may be helpful for us. If you will be having people help serve,
-                please let us know how many people will be helping. Also, please tell us a little about yourself/your organization. Adding a link to your website is always helpful! 
-                We enjoy giving credit to our amazing volunteers where credit is due.
+                In the following field, please provide any other information that you think may be helpful for us. This information will be used to
+                help our announcer announce you/your group before your performance. Also, please tell us a little about yourself/your group. 
+                Adding a link to your website is always helpful as well! If you are a part of a group, please make sure to include all group members names.
+                We enjoy giving credit to our amazing performers where credit is due.
             </p>
-
+            
             <label for="additionalInfo">Additional Information:</label>
-            <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide any additional information here..."></textarea><br/>
+            <textarea id="additionalInfo" name="additionalInfo" placeholder="Provide additional information here..."></textarea><br/>
             
             <button type="submit">Submit</button>
         </form>
+        
     </div>
     
     <!-- Flatpickr Calendar (Mobile Only) -->
