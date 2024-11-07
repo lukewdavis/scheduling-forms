@@ -193,6 +193,7 @@
 
 <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js'></script>
 <script>
     const url = 'https://scheduling-app.thelukedavis.com';
@@ -218,19 +219,19 @@
 
             // Fetch existing volunteer events
             const eventsResponse = await fetch(`${url}/api/taken-dates`, {
-                headers: {
+                headers : {
                     'Authorization': apiKey
                 }
             });
             const events = await eventsResponse.json();
 
-            // Extract dates for volunteers of type "meal_provider"
-            const mealDates = events
-                .filter(event => event.type === "meal_provider")
+            // Extract dates for volunteers of type "performer"
+            const performerDates = events
+                .filter(event => event.type === "performer")
                 .map(event => event.date);
 
             // Filter out performer dates from allowed dates
-            return allowedDates.filter(date => !mealDates.includes(date));
+            return allowedDates.filter(date => !performerDates.includes(date));
         } catch (error) {
             console.error("Error fetching allowed dates:", error);
             throw error; // Re-throw error to be caught in the retry logic
