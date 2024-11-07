@@ -409,14 +409,14 @@
 
                 // Create an array of participant details
                 const externalDetails = jsonEntries.map(entry => `
-                <h3><strong>${formatDate(entry.date)}</strong></h3>
+                <li>${formatDate(entry.date)}</li>
                 `).join('');
 
                 // Format the email message as HTML
                 const externalMessage = `
                     <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to provide a post game meal for the following dates:<br/></p>
 
-                    ${externalDetails}
+                    <ul>${externalDetails}</ul>
 
                     <h2>Game Time and Meal Arrival Details</h2>
                     <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All meal providers are kindly asked to arrive sometime between the 7th and 8th inning. This will help us ensure we have enough time to set up for the players. It is

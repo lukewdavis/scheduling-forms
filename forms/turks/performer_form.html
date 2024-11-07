@@ -403,14 +403,14 @@ $('#volunteerForm').on('submit', async function(event) {
 
         // Create an array of participant details
         const externalDetails = jsonEntries.map(entry => `
-        ${formatDate(entry.date)}
-        `).join(',');
+        <li>${formatDate(entry.date)}</li>
+        `).join('');
 
         // Format the email message as HTML
         const externalMessage = `
             <p>Thank you for your interest in helping out the Harrisonburg Turks. You have signed up to perform the National Anthem for the following dates:<br/></p>
 
-            <p>${externalDetails}</p>
+            <ul>${externalDetails}</ul>
 
             <h2>Game Time and Performer Arrival Details</h2>
             <p>Game time for Monday through Saturday is 7:00 PM, and on Sundays, games begin at 5:00 PM. All National Anthem performers are kindly asked to arrive 15-30 minutes before game time to ensure a smooth and timely performance.</p>
