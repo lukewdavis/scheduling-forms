@@ -224,9 +224,9 @@
             });
             const events = await eventsResponse.json();
 
-            // Extract dates for volunteers of type "performer"
+            // Extract dates for volunteers of type "meal_provider"
             const performerDates = events
-                .filter(event => event.type === "performer")
+                .filter(event => event.type === "meal_provider")
                 .map(event => event.date);
 
             // Filter out performer dates from allowed dates
