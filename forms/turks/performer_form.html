@@ -233,7 +233,7 @@
         allowedDates = await fetchAllowedDates();
 
         flatpickr("#flatpick-date", {
-            mode: "multiple",
+            mode: "sinlge",
             dateFormat: "Y-m-d",
             disable: [
                 (date) => !allowedDates.includes(moment(date).format('YYYY-MM-DD')),
@@ -258,15 +258,14 @@
                 const dateStr = moment(startDate).format('YYYY-MM-DD');
 
                 if (allowedDates.includes(dateStr)) {
-                    if (selectedDates.has(dateStr)) {
-                        // Deselect the date
-                        selectedDates.delete(dateStr);
-                    } else {
-                        // Select the date
-                        selectedDates.add(dateStr);
-                    }
+                    // Clear previously selected date (enforce single selection)
+                    selectedDates.clear();
                     
-                    $('#date').val(Array.from(selectedDates).join(', '));
+                    // Add the new selected date
+                    selectedDates.add(dateStr);
+
+                    // Update input field
+                    $('#date').val(dateStr);
 
                     // Update the calendar display
                     updateEventDisplay();
@@ -283,15 +282,18 @@
             },
             events: [], // No events from remote API
             height: 'auto',
-            eventClick: function(event, jsEvent, view) {
+            eventClick: function(event) {
                 const dateStr = moment(event.start).format('YYYY-MM-DD');
 
                 if (selectedDates.has(dateStr)) {
                     // Deselect the event date
-                    selectedDates.delete(dateStr);
+                    selectedDates.clear();
+                    
                     // Remove the event from the calendar
                     $('#calendar').fullCalendar('removeEvents', event._id);
-                    $('#date').val(Array.from(selectedDates).join(', ')); // Update the date input
+
+                    // Clear the input field
+                    $('#date').val('');
                 }
             },
         });
