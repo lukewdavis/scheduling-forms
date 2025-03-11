@@ -233,7 +233,7 @@
         allowedDates = await fetchAllowedDates();
 
         flatpickr("#flatpick-date", {
-            mode: "sinlge",
+            mode: "single",
             dateFormat: "Y-m-d",
             disable: [
                 (date) => !allowedDates.includes(moment(date).format('YYYY-MM-DD')),
